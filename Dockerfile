@@ -16,9 +16,6 @@ COPY . .
 # Build the TypeScript application
 RUN npm run build
 
-# Remove devDependencies to reduce image size
-RUN npm prune --production
-
 # Create a non-root user to run the application
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
