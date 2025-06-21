@@ -13,12 +13,10 @@ export const getVisitors = (req: Request, res: Response): void => {
  * Record visit 
  */
 export const recordVisit = (req: Request, res: Response): void => {
-  // Extract IP address and port from request
+  // Extract IP address from request
   const ip = req.ip || req.socket.remoteAddress || 'unknown';
   // Express may include IPv6 prefix "::ffff:" which we can remove for cleaner logs
   const cleanIp = ip.replace(/^::ffff:/, '');
-  
-  const port = req.socket.remotePort || 0;
   
   // Extract code from request body if provided
   const code = req.body?.code;
@@ -26,7 +24,6 @@ export const recordVisit = (req: Request, res: Response): void => {
   // Record the visitor
   const visitorData: Visitor = {
     ip: cleanIp,
-    port: port,
     timestamp: new Date(),
     path: req.path
   };
@@ -221,18 +218,17 @@ export const getHomePage = (req: Request, res: Response): void => {
 };
 
 /**
- * Get the latest visit for the current user (identified by IP and port)
+ * Get the latest visit for the current user (identified by IP address)
  */
 export const getLatestVisit = (req: Request, res: Response): void => {
-  // Extract IP address and port from request
+  // Extract IP address from request
   const ip = req.ip || req.socket.remoteAddress || 'unknown';
   const cleanIp = ip.replace(/^::ffff:/, '');
-  const port = req.socket.remotePort || 0;
 
   // Get all visitors and find the latest one for this user
   const visitors = visitorService.getVisitors();
   const userVisits = visitors.filter(visitor => 
-    visitor.ip === cleanIp && visitor.port === port
+    visitor.ip === cleanIp
   );
 
   if (userVisits.length === 0) {
@@ -240,8 +236,7 @@ export const getLatestVisit = (req: Request, res: Response): void => {
       error: 'No visits found',
       message: 'No visit records found for this user',
       user: {
-        ip: cleanIp,
-        port: port
+        ip: cleanIp
       }
     });
     return;
@@ -257,8 +252,7 @@ export const getLatestVisit = (req: Request, res: Response): void => {
     latestVisit: latestVisit,
     totalVisits: userVisits.length,
     user: {
-      ip: cleanIp,
-      port: port
+      ip: cleanIp
     }
   });
 };

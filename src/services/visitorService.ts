@@ -3,7 +3,6 @@
  */
 export interface Visitor {
   ip: string;
-  port: number;
   timestamp: Date;
   path?: string;
   code?: string;
@@ -22,7 +21,7 @@ class VisitorService {
   public addVisitor(visitor: Visitor): void {
     this.visitors.push(visitor);
     const codeInfo = visitor.code ? ` with code: ${visitor.code}` : '';
-    console.log(`Visitor recorded: ${visitor.ip}:${visitor.port} at ${visitor.timestamp}${codeInfo}`);
+    console.log(`Visitor recorded: ${visitor.ip} at ${visitor.timestamp}${codeInfo}`);
   }
 
   /**
