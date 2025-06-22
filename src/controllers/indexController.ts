@@ -120,7 +120,7 @@ export const getHomePage = (req: Request, res: Response): void => {
     
     visitorService.addVisitor(visitorData);
     
-    // Serve a special page for iOS that attempts to copy to clipboard before redirecting
+    // Serve a special page for iOS with button-triggered clipboard and redirect
     const clipboardValue = configService.getClipboardValue();
     const html = `
 <!DOCTYPE html>
@@ -128,7 +128,7 @@ export const getHomePage = (req: Request, res: Response): void => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting to TestFlight...</title>
+    <title>Install Our App - iOS</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -151,22 +151,47 @@ export const getHomePage = (req: Request, res: Response): void => {
             border: 1px solid rgba(255, 255, 255, 0.18);
             max-width: 400px;
         }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255, 255, 255, 0.3);
-            border-top: 5px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+        .app-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ecf0f1;
         }
-        .message {
-            margin: 20px 0;
+        .description {
+            font-size: 16px;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.5;
+        }
+        .install-button {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border: none;
+            color: white;
+            padding: 18px 30px;
             font-size: 18px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        .install-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        .install-button:active {
+            transform: translateY(0);
+        }
+        .install-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
         .clipboard-info {
             background: rgba(255, 255, 255, 0.1);
@@ -174,51 +199,85 @@ export const getHomePage = (req: Request, res: Response): void => {
             border-radius: 8px;
             margin: 20px 0;
             font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .manual-redirect {
-            margin-top: 30px;
-        }
-        .manual-redirect a {
-            color: #3498db;
-            text-decoration: none;
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
             font-weight: bold;
+            display: none;
+            font-size: 14px;
+        }
+        .status.success {
+            background: rgba(46, 204, 113, 0.3);
+            border: 1px solid rgba(46, 204, 113, 0.5);
+            color: #2ecc71;
+        }
+        .status.error {
+            background: rgba(231, 76, 60, 0.3);
+            border: 1px solid rgba(231, 76, 60, 0.5);
+            color: #e74c3c;
+        }
+        .ios-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="spinner"></div>
-        <div class="message">
-            <h2>🍎 iOS Device Detected</h2>
-            <p>Preparing to redirect to TestFlight...</p>
+        <div class="ios-badge">📱 iOS Device Detected</div>
+        <div class="app-icon">🚀</div>
+        <div class="title">Get Our App!</div>
+        <div class="description">
+            Ready to experience our app? Click the button below to install via TestFlight.
         </div>
+        
+        <div id="status"></div>
+        
+        <button id="installButton" class="install-button" onclick="installApp()">
+            📦 Install the App
+        </button>
         
         <div class="clipboard-info">
-            <strong>Clipboard Value Set:</strong><br>
-            <code>${clipboardValue}</code>
-        </div>
-        
-        <div class="manual-redirect">
-            <p>If you're not redirected automatically:</p>
-            <a href="https://testflight.apple.com/" id="manualLink">Click here to go to TestFlight</a>
+            <strong>📋 What happens when you click:</strong><br>
+            • Copies tracking code to clipboard<br>
+            • Opens TestFlight for app installation<br>
+            • Code: <code>${clipboardValue}</code>
         </div>
     </div>
 
     <script>
-        // Attempt to copy to clipboard
-        async function copyToClipboard() {
-            const textToCopy = '${clipboardValue}';
+        // Show status message
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML = message;
+            statusEl.className = 'status ' + type;
+            statusEl.style.display = 'block';
             
+            // Hide after 3 seconds
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+
+        // Copy to clipboard function
+        async function copyToClipboard(text) {
             try {
-                // Modern clipboard API (requires HTTPS and user interaction)
+                // Modern clipboard API (works with user interaction)
                 if (navigator.clipboard && window.isSecureContext) {
-                    await navigator.clipboard.writeText(textToCopy);
+                    await navigator.clipboard.writeText(text);
                     console.log('Clipboard API: Successfully copied to clipboard');
                     return true;
                 } else {
-                    // Fallback for older browsers or non-secure contexts
+                    // Fallback for older browsers
                     const textArea = document.createElement('textarea');
-                    textArea.value = textToCopy;
+                    textArea.value = text;
                     textArea.style.position = 'fixed';
                     textArea.style.opacity = '0';
                     textArea.style.left = '-9999px';
@@ -245,39 +304,52 @@ export const getHomePage = (req: Request, res: Response): void => {
             return false;
         }
         
-        // Function to redirect to TestFlight
-        function redirectToTestFlight() {
-            window.location.href = 'https://testflight.apple.com/';
-        }
-        
-        // Main execution
-        async function main() {
-            // Wait a moment for the page to load
-            await new Promise(resolve => setTimeout(resolve, 500));
+        // Main install function triggered by button click
+        async function installApp() {
+            const button = document.getElementById('installButton');
+            const clipboardText = '${clipboardValue}';
             
-            // Try to copy to clipboard
-            const clipboardSuccess = await copyToClipboard();
+            // Disable button during process
+            button.disabled = true;
+            button.textContent = '📋 Copying...';
             
-            if (clipboardSuccess) {
-                console.log('Clipboard operation completed successfully');
-            } else {
-                console.log('Clipboard operation failed - continuing with redirect');
+            try {
+                // Attempt to copy to clipboard
+                const clipboardSuccess = await copyToClipboard(clipboardText);
+                
+                if (clipboardSuccess) {
+                    showStatus('✅ Tracking code copied to clipboard!', 'success');
+                    button.textContent = '🚀 Opening TestFlight...';
+                    
+                    // Wait a moment then redirect
+                    setTimeout(() => {
+                        window.location.href = 'https://testflight.apple.com/';
+                    }, 1000);
+                } else {
+                    showStatus('⚠️ Clipboard copy failed, but proceeding to TestFlight', 'error');
+                    button.textContent = '🚀 Opening TestFlight...';
+                    
+                    // Still redirect even if clipboard failed
+                    setTimeout(() => {
+                        window.location.href = 'https://testflight.apple.com/';
+                    }, 1500);
+                }
+            } catch (error) {
+                console.error('Install process error:', error);
+                showStatus('❌ Something went wrong, but opening TestFlight...', 'error');
+                
+                // Redirect anyway
+                setTimeout(() => {
+                    window.location.href = 'https://testflight.apple.com/';
+                }, 1500);
+            } finally {
+                // Re-enable button after 3 seconds in case user stays on page
+                setTimeout(() => {
+                    button.disabled = false;
+                    button.textContent = '📦 Install the App';
+                }, 3000);
             }
-            
-            // Wait another moment then redirect
-            setTimeout(redirectToTestFlight, 1500);
         }
-        
-        // Start the process
-        main();
-        
-        // Add click handler for manual link
-        document.getElementById('manualLink').addEventListener('click', function(e) {
-            e.preventDefault();
-            copyToClipboard().then(() => {
-                window.location.href = 'https://testflight.apple.com/';
-            });
-        });
     </script>
 </body>
 </html>
