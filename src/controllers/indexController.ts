@@ -60,6 +60,40 @@ export const getStatus = (req: Request, res: Response): void => {
  * Serve the main HTML page
  */
 export const getHomePage = (req: Request, res: Response): void => {
+  // Check if user is on Android device (mobile or tablet)
+  const userAgent = req.headers['user-agent'] || '';
+  const isAndroid = /Android/i.test(userAgent);
+  
+  if (isAndroid) {
+    // Record the visit before redirecting
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    const cleanIp = ip.replace(/^::ffff:/, '');
+    
+    // Generate a random code for Android redirects
+    const generateRandomCode = (): string => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let result = '';
+      for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    };
+    
+    const visitorData: Visitor = {
+      ip: cleanIp,
+      timestamp: new Date(),
+      path: req.path,
+      code: generateRandomCode()
+    };
+    
+    visitorService.addVisitor(visitorData);
+    
+    // Redirect to Play Store
+    res.redirect('https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3Ddemo');
+    return;
+  }
+  
+  // For non-Android devices or desktop, serve the HTML page
   const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -184,7 +218,7 @@ export const getHomePage = (req: Request, res: Response): void => {
             document.getElementById('recordBtn').disabled = true;
 
             try {
-                const response = await fetch('/api/visit', {
+                const response = await fetch('/api/visits', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
