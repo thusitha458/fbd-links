@@ -190,6 +190,32 @@ export const getAdminPage = (req: Request, res: Response): void => {
                 <button type="button" onclick="testUrl()" class="btn-secondary">🔗 Test URL</button>
             </div>
         </form>
+
+        <h2>📋 Clipboard Configuration</h2>
+        
+        <div class="current-config">
+            <strong>Current Clipboard Value:</strong><br>
+            <code id="currentClipboardValue">${currentConfig.clipboardValue}</code>
+        </div>
+        
+        <form id="clipboardForm">
+            <div class="form-group">
+                <label for="clipboardValue">Clipboard Value:</label>
+                <input 
+                    type="text" 
+                    id="clipboardValue" 
+                    name="clipboardValue" 
+                    value="${currentConfig.clipboardValue}"
+                    placeholder="Enter clipboard value"
+                    required
+                >
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn-primary">💾 Update Clipboard</button>
+                <button type="button" onclick="resetClipboardToDefault()" class="btn-danger">🔄 Reset Clipboard</button>
+            </div>
+        </form>
     </div>
 
     <script>
@@ -269,6 +295,60 @@ export const getAdminPage = (req: Request, res: Response): void => {
                 showStatus('⚠️ Please enter a URL to test', 'error');
             }
         }
+
+        // Handle clipboard form submission
+        document.getElementById('clipboardForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const clipboardValue = formData.get('clipboardValue');
+            
+            try {
+                const response = await fetch('/admin/config/clipboard', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ clipboardValue: clipboardValue })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus('✅ Clipboard value updated successfully!', 'success');
+                    document.getElementById('currentClipboardValue').textContent = clipboardValue;
+                } else {
+                    showStatus('❌ Error: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Network error: ' + error.message, 'error');
+            }
+        });
+
+        // Reset clipboard to default
+        async function resetClipboardToDefault() {
+            if (!confirm('Are you sure you want to reset the clipboard value to default?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/config/clipboard/reset', {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus('✅ Clipboard value reset to default!', 'success');
+                    document.getElementById('clipboardValue').value = result.clipboardValue;
+                    document.getElementById('currentClipboardValue').textContent = result.clipboardValue;
+                } else {
+                    showStatus('❌ Error: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Network error: ' + error.message, 'error');
+            }
+        }
     </script>
 </body>
 </html>
@@ -319,6 +399,57 @@ export const resetPlaystoreUrl = (req: Request, res: Response): void => {
       success: true,
       message: 'Play Store URL reset to default',
       playstoreUrl: config.playstoreUrl
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred'
+    });
+  }
+};
+
+/**
+ * Update clipboard value
+ */
+export const updateClipboardValue = (req: Request, res: Response): void => {
+  try {
+    const { clipboardValue } = req.body;
+    
+    if (clipboardValue === undefined || clipboardValue === null) {
+      res.status(400).json({
+        success: false,
+        message: 'Clipboard value is required'
+      });
+      return;
+    }
+    
+    configService.updateClipboardValue(clipboardValue);
+    
+    res.json({
+      success: true,
+      message: 'Clipboard value updated successfully',
+      clipboardValue: clipboardValue
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred'
+    });
+  }
+};
+
+/**
+ * Reset clipboard value to default
+ */
+export const resetClipboardValue = (req: Request, res: Response): void => {
+  try {
+    configService.resetClipboardValue();
+    const config = configService.getConfig();
+    
+    res.json({
+      success: true,
+      message: 'Clipboard value reset to default',
+      clipboardValue: config.clipboardValue
     });
   } catch (error) {
     res.status(500).json({

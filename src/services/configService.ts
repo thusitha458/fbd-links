@@ -3,6 +3,7 @@
  */
 export interface AppConfig {
   playstoreUrl: string;
+  clipboardValue: string;
 }
 
 /**
@@ -10,7 +11,8 @@ export interface AppConfig {
  */
 class ConfigService {
   private config: AppConfig = {
-    playstoreUrl: 'https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3Ddemo'
+    playstoreUrl: 'https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3D999901',
+    clipboardValue: 'brplink::999901'
   };
 
   /**
@@ -42,6 +44,27 @@ class ConfigService {
   }
 
   /**
+   * Get the current clipboard value
+   * @returns The current clipboard value
+   */
+  public getClipboardValue(): string {
+    return this.config.clipboardValue;
+  }
+
+  /**
+   * Update the clipboard value
+   * @param value The new clipboard value
+   */
+  public updateClipboardValue(value: string): void {
+    if (typeof value !== 'string') {
+      throw new Error('Invalid clipboard value provided');
+    }
+    
+    this.config.clipboardValue = value;
+    console.log(`Clipboard value updated to: ${value}`);
+  }
+
+  /**
    * Get all configuration
    * @returns Current application configuration
    */
@@ -55,6 +78,25 @@ class ConfigService {
   public resetPlaystoreUrl(): void {
     this.config.playstoreUrl = 'https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3Ddemo';
     console.log('Play Store URL reset to default');
+  }
+
+  /**
+   * Reset clipboard value to default
+   */
+  public resetClipboardValue(): void {
+    this.config.clipboardValue = 'brplink::demo';
+    console.log('Clipboard value reset to default');
+  }
+
+  /**
+   * Reset all configuration to defaults
+   */
+  public resetAllConfig(): void {
+    this.config = {
+      playstoreUrl: 'https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3Ddemo',
+      clipboardValue: 'brplink::demo'
+    };
+    console.log('All configuration reset to defaults');
   }
 }
 

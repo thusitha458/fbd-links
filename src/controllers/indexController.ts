@@ -64,6 +64,7 @@ export const getHomePage = (req: Request, res: Response): void => {
   // Check if user is on Android device (mobile or tablet)
   const userAgent = req.headers['user-agent'] || '';
   const isAndroid = /Android/i.test(userAgent);
+  const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
   
   if (isAndroid) {
     // Record the visit before redirecting
@@ -95,7 +96,198 @@ export const getHomePage = (req: Request, res: Response): void => {
     return;
   }
   
-  // For non-Android devices or desktop, serve the HTML page
+  if (isIOS) {
+    // Record the visit before redirecting
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    const cleanIp = ip.replace(/^::ffff:/, '');
+    
+    // Generate a random code for iOS redirects
+    const generateRandomCode = (): string => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let result = '';
+      for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    };
+    
+    const visitorData: Visitor = {
+      ip: cleanIp,
+      timestamp: new Date(),
+      path: req.path,
+      code: generateRandomCode()
+    };
+    
+    visitorService.addVisitor(visitorData);
+    
+    // Serve a special page for iOS that attempts to copy to clipboard before redirecting
+    const clipboardValue = configService.getClipboardValue();
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting to TestFlight...</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            max-width: 400px;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message {
+            margin: 20px 0;
+            font-size: 18px;
+        }
+        .clipboard-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .manual-redirect {
+            margin-top: 30px;
+        }
+        .manual-redirect a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <div class="message">
+            <h2>🍎 iOS Device Detected</h2>
+            <p>Preparing to redirect to TestFlight...</p>
+        </div>
+        
+        <div class="clipboard-info">
+            <strong>Clipboard Value Set:</strong><br>
+            <code>${clipboardValue}</code>
+        </div>
+        
+        <div class="manual-redirect">
+            <p>If you're not redirected automatically:</p>
+            <a href="https://testflight.apple.com/" id="manualLink">Click here to go to TestFlight</a>
+        </div>
+    </div>
+
+    <script>
+        // Attempt to copy to clipboard
+        async function copyToClipboard() {
+            const textToCopy = '${clipboardValue}';
+            
+            try {
+                // Modern clipboard API (requires HTTPS and user interaction)
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(textToCopy);
+                    console.log('Clipboard API: Successfully copied to clipboard');
+                    return true;
+                } else {
+                    // Fallback for older browsers or non-secure contexts
+                    const textArea = document.createElement('textarea');
+                    textArea.value = textToCopy;
+                    textArea.style.position = 'fixed';
+                    textArea.style.opacity = '0';
+                    textArea.style.left = '-9999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    
+                    try {
+                        const successful = document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        if (successful) {
+                            console.log('Fallback: Successfully copied to clipboard');
+                            return true;
+                        }
+                    } catch (err) {
+                        document.body.removeChild(textArea);
+                        console.error('Fallback clipboard failed:', err);
+                    }
+                }
+            } catch (err) {
+                console.error('Clipboard operation failed:', err);
+            }
+            
+            return false;
+        }
+        
+        // Function to redirect to TestFlight
+        function redirectToTestFlight() {
+            window.location.href = 'https://testflight.apple.com/';
+        }
+        
+        // Main execution
+        async function main() {
+            // Wait a moment for the page to load
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Try to copy to clipboard
+            const clipboardSuccess = await copyToClipboard();
+            
+            if (clipboardSuccess) {
+                console.log('Clipboard operation completed successfully');
+            } else {
+                console.log('Clipboard operation failed - continuing with redirect');
+            }
+            
+            // Wait another moment then redirect
+            setTimeout(redirectToTestFlight, 1500);
+        }
+        
+        // Start the process
+        main();
+        
+        // Add click handler for manual link
+        document.getElementById('manualLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            copyToClipboard().then(() => {
+                window.location.href = 'https://testflight.apple.com/';
+            });
+        });
+    </script>
+</body>
+</html>
+    `;
+    
+    res.send(html);
+    return;
+  }
+  
+  // For non-mobile devices (desktop/other), serve the HTML page
   const html = `
 <!DOCTYPE html>
 <html lang="en">

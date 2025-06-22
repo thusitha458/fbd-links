@@ -1,6 +1,6 @@
 import express from 'express';
 import { recordVisit, getStatus, getVisitors, getHomePage, getLatestVisit } from '../controllers/indexController';
-import { getAdminPage, updatePlaystoreUrl, resetPlaystoreUrl, getConfig } from '../controllers/adminController';
+import { getAdminPage, updatePlaystoreUrl, resetPlaystoreUrl, getConfig, updateClipboardValue, resetClipboardValue } from '../controllers/adminController';
 
 const router = express.Router();
 
@@ -16,5 +16,7 @@ router.get('/admin', getAdminPage);
 router.get('/admin/config', getConfig);
 router.post('/admin/config/playstore', updatePlaystoreUrl);
 router.post('/admin/config/playstore/reset', resetPlaystoreUrl);
+router.post('/admin/config/clipboard', updateClipboardValue);
+router.post('/admin/config/clipboard/reset', resetClipboardValue);
 
 export default router;
