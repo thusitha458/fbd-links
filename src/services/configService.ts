@@ -1,0 +1,65 @@
+/**
+ * Interface representing application configuration
+ */
+export interface AppConfig {
+  playstoreUrl: string;
+}
+
+/**
+ * Service for managing application configuration
+ */
+class ConfigService {
+  private config: AppConfig = {
+    playstoreUrl: 'https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3Ddemo'
+  };
+
+  /**
+   * Get the current Play Store URL
+   * @returns The current Play Store URL
+   */
+  public getPlaystoreUrl(): string {
+    return this.config.playstoreUrl;
+  }
+
+  /**
+   * Update the Play Store URL
+   * @param url The new Play Store URL
+   */
+  public updatePlaystoreUrl(url: string): void {
+    if (!url || typeof url !== 'string') {
+      throw new Error('Invalid URL provided');
+    }
+    
+    // Basic URL validation
+    try {
+      new URL(url);
+    } catch (error) {
+      throw new Error('Invalid URL format');
+    }
+    
+    this.config.playstoreUrl = url;
+    console.log(`Play Store URL updated to: ${url}`);
+  }
+
+  /**
+   * Get all configuration
+   * @returns Current application configuration
+   */
+  public getConfig(): AppConfig {
+    return { ...this.config };
+  }
+
+  /**
+   * Reset Play Store URL to default
+   */
+  public resetPlaystoreUrl(): void {
+    this.config.playstoreUrl = 'https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3Ddemo';
+    console.log('Play Store URL reset to default');
+  }
+}
+
+// Export a singleton instance
+export const configService = new ConfigService();
+
+// Export the service class itself in case it needs to be extended
+export default ConfigService;

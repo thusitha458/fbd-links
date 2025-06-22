@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { visitorService, Visitor } from '../services/visitorService';
+import { configService } from '../services/configService';
 
 /**
  * Get all visitors
@@ -88,8 +89,9 @@ export const getHomePage = (req: Request, res: Response): void => {
     
     visitorService.addVisitor(visitorData);
     
-    // Redirect to Play Store
-    res.redirect('https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3Ddemo');
+    // Redirect to Play Store using configurable URL
+    const playstoreUrl = configService.getPlaystoreUrl();
+    res.redirect(playstoreUrl);
     return;
   }
   
@@ -218,7 +220,7 @@ export const getHomePage = (req: Request, res: Response): void => {
             document.getElementById('recordBtn').disabled = true;
 
             try {
-                const response = await fetch('/api/visits', {
+                const response = await fetch('/api/visit', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
