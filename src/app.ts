@@ -1,10 +1,15 @@
 import express, { Request, Response, NextFunction } from 'express';
+import path from 'path';
 import routes from './routes';
 import config from './config';
 import errorHandler from './middlewares/errorHandler';
 
 const app = express();
 const port = config.port;
+
+// Set up EJS as the view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 // Trust the first proxy if behind one (helps with getting correct IP addresses)
 app.set('trust proxy', 1);
