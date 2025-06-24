@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { visitorService, Visitor } from '../services/visitorService';
-import { configService } from '../services/configService';
 
 /**
  * Get all visitors
@@ -8,31 +7,6 @@ import { configService } from '../services/configService';
 export const getVisitors = (req: Request, res: Response): void => {
   const visitors = visitorService.getVisitors();
   res.json({ visitors });
-};
-
-/**
- * Record visit 
- */
-export const recordVisit = (req: Request, res: Response): void => {
-  // Extract IP address from request
-  const ip = req.ip || req.socket.remoteAddress || 'unknown';
-  // Express may include IPv6 prefix "::ffff:" which we can remove for cleaner logs
-  const cleanIp = ip.replace(/^::ffff:/, '');
-  
-  // Extract code from request body if provided, otherwise use provider code
-  const code = req.body?.code || configService.getProviderCode();
-  
-  // Record the visitor
-  const visitorData: Visitor = {
-    ip: cleanIp,
-    timestamp: new Date(),
-    path: req.path,
-    code: code
-  };
-  
-  visitorService.addVisitor(visitorData);
-  
-  res.send('Recorded your visit!');
 };
 
 /**
@@ -57,12 +31,12 @@ export const getStatus = (req: Request, res: Response): void => {
  * Serve the main HTML page
  */
 export const getHomePage = (req: Request, res: Response): void => {
+  const code = req.params.code || '';
+
   // Check if user is on Android device (mobile or tablet)
   const userAgent = req.headers['user-agent'] || '';
   const isAndroid = /Android/i.test(userAgent);
   const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
-
-  const providerCode = configService.getProviderCode();
 
   // Record the visit before redirecting
   const ip = req.ip || req.socket.remoteAddress || 'unknown';
@@ -72,29 +46,29 @@ export const getHomePage = (req: Request, res: Response): void => {
     ip: cleanIp,
     timestamp: new Date(),
     path: req.path,
-    code: configService.getProviderCode()
+    code,
   };
   visitorService.addVisitor(visitorData);
 
   
   if (isAndroid) {
     // Redirect to Play Store using configurable URL
-    const playstoreUrl = configService.getPlaystoreUrl();
+    const playstoreUrl = `https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3D${code}`;
     res.redirect(playstoreUrl);
     return;
   }
   
   if (isIOS) {
     // Serve iOS install page with configurable clipboard value
-    const clipboardValue = configService.getClipboardValue();
+    const clipboardValue = `1${code}`;
     res.render('ios-install', {
-      clipboardValue: clipboardValue
+      clipboardValue, 
     });
     return;
   }
   
   res.render('homepage', {
-    providerCode,
+    providerCode: code,
   });
 };
 
