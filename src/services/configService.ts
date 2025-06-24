@@ -2,8 +2,7 @@
  * Interface representing application configuration
  */
 export interface AppConfig {
-  playstoreUrl: string;
-  clipboardValue: string;
+  providerCode: string;
 }
 
 /**
@@ -11,8 +10,7 @@ export interface AppConfig {
  */
 class ConfigService {
   private config: AppConfig = {
-    playstoreUrl: 'https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3D999901',
-    clipboardValue: 'brplink::999901'
+    providerCode: '999901'
   };
 
   /**
@@ -20,27 +18,7 @@ class ConfigService {
    * @returns The current Play Store URL
    */
   public getPlaystoreUrl(): string {
-    return this.config.playstoreUrl;
-  }
-
-  /**
-   * Update the Play Store URL
-   * @param url The new Play Store URL
-   */
-  public updatePlaystoreUrl(url: string): void {
-    if (!url || typeof url !== 'string') {
-      throw new Error('Invalid URL provided');
-    }
-    
-    // Basic URL validation
-    try {
-      new URL(url);
-    } catch (error) {
-      throw new Error('Invalid URL format');
-    }
-    
-    this.config.playstoreUrl = url;
-    console.log(`Play Store URL updated to: ${url}`);
+    return `https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3D${this.config.providerCode}`;
   }
 
   /**
@@ -48,20 +26,7 @@ class ConfigService {
    * @returns The current clipboard value
    */
   public getClipboardValue(): string {
-    return this.config.clipboardValue;
-  }
-
-  /**
-   * Update the clipboard value
-   * @param value The new clipboard value
-   */
-  public updateClipboardValue(value: string): void {
-    if (typeof value !== 'string') {
-      throw new Error('Invalid clipboard value provided');
-    }
-    
-    this.config.clipboardValue = value;
-    console.log(`Clipboard value updated to: ${value}`);
+    return `1${this.config.providerCode}`;
   }
 
   /**
@@ -73,19 +38,32 @@ class ConfigService {
   }
 
   /**
-   * Reset Play Store URL to default
+   * Get the current provider code
+   * @returns The current provider code
    */
-  public resetPlaystoreUrl(): void {
-    this.config.playstoreUrl = 'https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3Ddemo';
-    console.log('Play Store URL reset to default');
+  public getProviderCode(): string {
+    return this.config.providerCode;
   }
 
   /**
-   * Reset clipboard value to default
+   * Update the provider code
+   * @param code The new provider code
    */
-  public resetClipboardValue(): void {
-    this.config.clipboardValue = 'brplink::demo';
-    console.log('Clipboard value reset to default');
+  public updateProviderCode(code: string): void {
+    if (typeof code !== 'string' || code.trim().length === 0) {
+      throw new Error('Invalid provider code provided');
+    }
+    
+    this.config.providerCode = code.trim();
+    console.log(`Provider code updated to: ${code}`);
+  }
+
+  /**
+   * Reset provider code to default
+   */
+  public resetProviderCode(): void {
+    this.config.providerCode = '999901';
+    console.log('Provider code reset to default');
   }
 
   /**
@@ -93,8 +71,7 @@ class ConfigService {
    */
   public resetAllConfig(): void {
     this.config = {
-      playstoreUrl: 'https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3Ddemo',
-      clipboardValue: 'brplink::demo'
+      providerCode: '999901'
     };
     console.log('All configuration reset to defaults');
   }

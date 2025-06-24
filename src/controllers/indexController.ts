@@ -19,20 +19,16 @@ export const recordVisit = (req: Request, res: Response): void => {
   // Express may include IPv6 prefix "::ffff:" which we can remove for cleaner logs
   const cleanIp = ip.replace(/^::ffff:/, '');
   
-  // Extract code from request body if provided
-  const code = req.body?.code;
+  // Extract code from request body if provided, otherwise use provider code
+  const code = req.body?.code || configService.getProviderCode();
   
   // Record the visitor
   const visitorData: Visitor = {
     ip: cleanIp,
     timestamp: new Date(),
-    path: req.path
+    path: req.path,
+    code: code
   };
-  
-  // Add code if provided
-  if (code && typeof code === 'string') {
-    visitorData.code = code;
-  }
   
   visitorService.addVisitor(visitorData);
   
@@ -65,31 +61,23 @@ export const getHomePage = (req: Request, res: Response): void => {
   const userAgent = req.headers['user-agent'] || '';
   const isAndroid = /Android/i.test(userAgent);
   const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+
+  const providerCode = configService.getProviderCode();
+
+  // Record the visit before redirecting
+  const ip = req.ip || req.socket.remoteAddress || 'unknown';
+  const cleanIp = ip.replace(/^::ffff:/, '');
+    
+  const visitorData: Visitor = {
+    ip: cleanIp,
+    timestamp: new Date(),
+    path: req.path,
+    code: configService.getProviderCode()
+  };
+  visitorService.addVisitor(visitorData);
+
   
   if (isAndroid) {
-    // Record the visit before redirecting
-    const ip = req.ip || req.socket.remoteAddress || 'unknown';
-    const cleanIp = ip.replace(/^::ffff:/, '');
-    
-    // Generate a random code for Android redirects
-    const generateRandomCode = (): string => {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let result = '';
-      for (let i = 0; i < 8; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return result;
-    };
-    
-    const visitorData: Visitor = {
-      ip: cleanIp,
-      timestamp: new Date(),
-      path: req.path,
-      code: generateRandomCode()
-    };
-    
-    visitorService.addVisitor(visitorData);
-    
     // Redirect to Play Store using configurable URL
     const playstoreUrl = configService.getPlaystoreUrl();
     res.redirect(playstoreUrl);
@@ -97,29 +85,6 @@ export const getHomePage = (req: Request, res: Response): void => {
   }
   
   if (isIOS) {
-    // Record the visit before redirecting
-    const ip = req.ip || req.socket.remoteAddress || 'unknown';
-    const cleanIp = ip.replace(/^::ffff:/, '');
-    
-    // Generate a random code for iOS redirects
-    const generateRandomCode = (): string => {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let result = '';
-      for (let i = 0; i < 8; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return result;
-    };
-    
-    const visitorData: Visitor = {
-      ip: cleanIp,
-      timestamp: new Date(),
-      path: req.path,
-      code: generateRandomCode()
-    };
-    
-    visitorService.addVisitor(visitorData);
-    
     // Serve iOS install page with configurable clipboard value
     const clipboardValue = configService.getClipboardValue();
     res.render('ios-install', {
@@ -128,8 +93,9 @@ export const getHomePage = (req: Request, res: Response): void => {
     return;
   }
   
-  // For non-mobile devices (desktop/other), serve the HTML page
-  res.render('homepage');
+  res.render('homepage', {
+    providerCode,
+  });
 };
 
 /**

@@ -88,23 +88,12 @@
         <div id="status"></div>
         <div class="info">
             <h3>Welcome to FBD Links Visitor Tracking</h3>
-            <p>Your visit is being recorded automatically with a unique tracking code.</p>
-            <p>Generated Code: <span id="generatedCode" class="code-display">-</span></p>
+            <p>Your visit has been recorded automatically with the provider tracking code.</p>
+            <p>Provider Code: <span id="providerCode" class="code-display"><%= typeof providerCode !== 'undefined' ? providerCode : 'N/A' %></span></p>
         </div>
-        <button onclick="recordVisit()" id="recordBtn">Record Visit Manually</button>
     </div>
 
     <script>
-        // Generate a random alphanumeric code
-        function generateRandomCode() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let result = '';
-            for (let i = 0; i < 8; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return result;
-        }
-
         // Show status message
         function showStatus(message, type) {
             const statusEl = document.getElementById('status');
@@ -112,39 +101,9 @@
             statusEl.className = 'status ' + type;
         }
 
-        // Record visit function
-        async function recordVisit() {
-            const code = generateRandomCode();
-            document.getElementById('generatedCode').textContent = code;
-            
-            showStatus('Recording visit...', 'loading');
-            document.getElementById('recordBtn').disabled = true;
-
-            try {
-                const response = await fetch('/api/visit', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ code: code })
-                });
-
-                if (response.ok) {
-                    const result = await response.text();
-                    showStatus('✅ ' + result + ' (Code: ' + code + ')', 'success');
-                } else {
-                    throw new Error('Failed to record visit');
-                }
-            } catch (error) {
-                showStatus('❌ Error recording visit: ' + error.message, 'error');
-            } finally {
-                document.getElementById('recordBtn').disabled = false;
-            }
-        }
-
-        // Automatically record visit when page loads
+        // Show success message on page load
         window.addEventListener('load', () => {
-            setTimeout(recordVisit, 1000); // Wait 1 second then auto-record
+            showStatus('✅ Your visit has been recorded successfully!', 'success');
         });
     </script>
 </body>

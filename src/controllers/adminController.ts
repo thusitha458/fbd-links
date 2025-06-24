@@ -13,26 +13,26 @@ export const getAdminPage = (req: Request, res: Response): void => {
 };
 
 /**
- * Update Play Store URL
+ * Update provider code
  */
-export const updatePlaystoreUrl = (req: Request, res: Response): void => {
+export const updateProviderCode = (req: Request, res: Response): void => {
   try {
-    const { playstoreUrl } = req.body;
+    const { providerCode } = req.body;
     
-    if (!playstoreUrl) {
+    if (!providerCode) {
       res.status(400).json({
         success: false,
-        message: 'Play Store URL is required'
+        message: 'Provider code is required'
       });
       return;
     }
     
-    configService.updatePlaystoreUrl(playstoreUrl);
+    configService.updateProviderCode(providerCode);
     
     res.json({
       success: true,
-      message: 'Play Store URL updated successfully',
-      playstoreUrl: playstoreUrl
+      message: 'Provider code updated successfully',
+      providerCode: providerCode
     });
   } catch (error) {
     res.status(400).json({
@@ -43,68 +43,17 @@ export const updatePlaystoreUrl = (req: Request, res: Response): void => {
 };
 
 /**
- * Reset Play Store URL to default
+ * Reset provider code to default
  */
-export const resetPlaystoreUrl = (req: Request, res: Response): void => {
+export const resetProviderCode = (req: Request, res: Response): void => {
   try {
-    configService.resetPlaystoreUrl();
+    configService.resetProviderCode();
     const config = configService.getConfig();
     
     res.json({
       success: true,
-      message: 'Play Store URL reset to default',
-      playstoreUrl: config.playstoreUrl
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error instanceof Error ? error.message : 'Unknown error occurred'
-    });
-  }
-};
-
-/**
- * Update clipboard value
- */
-export const updateClipboardValue = (req: Request, res: Response): void => {
-  try {
-    const { clipboardValue } = req.body;
-    
-    if (clipboardValue === undefined || clipboardValue === null) {
-      res.status(400).json({
-        success: false,
-        message: 'Clipboard value is required'
-      });
-      return;
-    }
-    
-    configService.updateClipboardValue(clipboardValue);
-    
-    res.json({
-      success: true,
-      message: 'Clipboard value updated successfully',
-      clipboardValue: clipboardValue
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error instanceof Error ? error.message : 'Unknown error occurred'
-    });
-  }
-};
-
-/**
- * Reset clipboard value to default
- */
-export const resetClipboardValue = (req: Request, res: Response): void => {
-  try {
-    configService.resetClipboardValue();
-    const config = configService.getConfig();
-    
-    res.json({
-      success: true,
-      message: 'Clipboard value reset to default',
-      clipboardValue: config.clipboardValue
+      message: 'Provider code reset to default',
+      providerCode: config.providerCode
     });
   } catch (error) {
     res.status(500).json({
