@@ -111,3 +111,28 @@ export const getLatestVisit = (req: Request, res: Response): void => {
     }
   });
 };
+
+/**
+ * Serve Apple App Site Association file for Universal Links
+ */
+export const getAppleAppSiteAssociation = (req: Request, res: Response): void => {
+  const aasaContent = {
+    "applinks": {
+      "details": [
+        {
+          "appIDs": ["XAR3N4K5N8.se.brpsystems.brplinks"],
+          "components": [
+            {
+              "/": "/providers/*",
+              "comment": "Matches all provider paths for Universal Links"
+            }
+          ]
+        }
+      ]
+    }
+  };
+
+  // Set the correct content type for Apple App Site Association
+  res.setHeader('Content-Type', 'application/json');
+  res.json(aasaContent);
+};
