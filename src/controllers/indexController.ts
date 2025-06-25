@@ -148,7 +148,7 @@ export const getAndroidAssetLinks = (req: Request, res: Response): void => {
         "namespace": "android_app",
         "package_name": "com.brplinks",
         "sha256_cert_fingerprints": [
-          "CE:13:0A:EB:6B:81:AC:83:92:E3:51:E9:7D:0A:AD:FD:A0:3B:32:A7:28:9A:BE:39:1F:02:B0:12:38:51:40:15"
+          "24:A0:21:B4:AB:D1:D8:B7:AF:0E:25:02:A1:A4:BA:B2:3B:BB:31:6A:C6:75:81:42:92:CB:87:89:5F:8A:2E:3A"
         ]
       }
     }
