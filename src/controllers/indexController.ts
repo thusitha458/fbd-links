@@ -150,10 +150,7 @@ export const getAndroidAssetLinks = (req: Request, res: Response): void => {
         "sha256_cert_fingerprints": [
           "CE:13:0A:EB:6B:81:AC:83:92:E3:51:E9:7D:0A:AD:FD:A0:3B:32:A7:28:9A:BE:39:1F:02:B0:12:38:51:40:15"
         ]
-      },
-      "include": [
-        "/providers/*"
-      ]
+      }
     }
   ];
 
