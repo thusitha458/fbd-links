@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 
 interface ApiError extends Error {
   status?: number;
@@ -6,10 +6,8 @@ interface ApiError extends Error {
 
 export const errorHandler = (
   error: ApiError,
-  req: Request,
+  _req: Request,
   res: Response,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  next: NextFunction
 ): void => {
   const status = error.status || 500;
   const message = error.message || 'Something went wrong';

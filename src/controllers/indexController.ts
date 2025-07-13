@@ -13,18 +13,11 @@ export const getVisitors = (req: Request, res: Response): void => {
 /**
  * API status controller
  */
-export const getStatus = (req: Request, res: Response): void => {
-  const visitorCount = visitorService.getVisitors().length;
-  const uniqueVisitors = visitorService.getUniqueVisitorCount();
-
+export const getStatus = (_req: Request, res: Response): void => {
   res.json({
     status: "online",
     timestamp: new Date(),
     env: process.env.NODE_ENV || "development",
-    stats: {
-      totalVisitors: visitorCount,
-      uniqueVisitors: uniqueVisitors,
-    },
   });
 };
 
@@ -49,9 +42,10 @@ export const getHomePage = async (req: Request, res: Response): Promise<void> =>
     path: req.path,
     code,
   };
-  visitorService.addVisitor(visitorData);
 
   if (isAndroid) {
+    visitorService.addVisitor(visitorData);
+
     // Redirect to Play Store using configurable URL
     const playstoreUrl = `https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3D${code}`;
     res.redirect(playstoreUrl);
@@ -66,6 +60,8 @@ export const getHomePage = async (req: Request, res: Response): Promise<void> =>
   }
 
   if (isIOS) {
+    visitorService.addVisitor(visitorData);
+
     res.render("home-page", {
       providerCode: code,
       showInstallButton: true,
