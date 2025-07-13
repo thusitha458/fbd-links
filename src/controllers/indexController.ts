@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { visitorService, Visitor } from "../services/visitorService";
+import { appService } from "../services/appService";
 
 /**
  * Get all visitors
@@ -30,7 +31,7 @@ export const getStatus = (req: Request, res: Response): void => {
 /**
  * Serve the main HTML page
  */
-export const getHomePage = (req: Request, res: Response): void => {
+export const getHomePage = async (req: Request, res: Response): Promise<void> => {
   const code = req.params.code || "";
 
   // Check if user is on Android device (mobile or tablet)
@@ -57,17 +58,26 @@ export const getHomePage = (req: Request, res: Response): void => {
     return;
   }
 
+  const appInfo = await appService.getAppInfoFromProviderCode(code);
+
+  if (!appInfo) {
+    res.status(404).send("Not found.");
+    return;
+  }
+
   if (isIOS) {
-    // Serve iOS install page with configurable clipboard value
-    const clipboardValue = `1${code}`;
-    res.render("ios-install", {
-      clipboardValue,
+    res.render("home-page", {
+      providerCode: code,
+      showInstallButton: true,
+      ...appInfo,
     });
     return;
   }
 
-  res.render("homepage", {
+  res.render("home-page", {
     providerCode: code,
+    showInstallButton: false,
+    ...appInfo,
   });
 };
 

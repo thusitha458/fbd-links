@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Install App</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(180deg, #EDEADE 0%, <%= primaryColor %> 150%);
+            background-color: #EDEADE;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 2px rgba(183, 184, 191, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            max-width: 400px;
+        }
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: black;
+        }
+        .description {
+            font-size: 16px;
+            margin-bottom: 30px;
+            color: black;
+            line-height: 1.5;
+        }
+        .install-button {
+            background: <%= primaryColor %>;
+            border: none;
+            color: white;
+            padding: 18px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        .install-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        .install-button:active {
+            transform: translateY(0);
+        }
+        .install-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .clipboard-info {
+            padding: 0 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgb(100, 97, 97);
+        }
+        .logo {
+            width: 100%;
+            height: 100%;
+        }
+        .logo-container {
+            max-height: 30vh;
+            max-width: min(40vw, 50%);
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <% if (logo.contentUrl) { %>
+            <div class="logo-container">
+                <image src="<%= logo.contentUrl %>" alt="<%= appName %> Logo" class="logo">
+            </div>
+        <% } %>
+        <div class="title">Get the <%= appName %> app!</div>
+        <% if (showInstallButton) { %>
+            <div class="description">
+                Click the button below to install the app on your device.
+            </div>
+            
+            <button id="installButton" class="install-button" onclick="installApp()">
+                📦 Install the app
+            </button>
+            
+            <div class="clipboard-info">
+                <strong>📋 What happens when you click:</strong><br>
+                The app will be downloaded with the provider code <%= providerCode %> for <%= appName %> automatically prefilled. 
+            </div>
+        <% } %>
+    </div>
+
+    <script>
+        // Copy to clipboard function
+        async function copyToClipboard(text) {
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                } else {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.opacity = '0';
+                    textArea.style.left = '-9999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    
+                    try {
+                        const successful = document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        if (successful) {
+                            return true;
+                        }
+                    } catch (err) {
+                        document.body.removeChild(textArea);
+                        console.error('Fallback clipboard failed:', err);
+                    }
+                }
+            } catch (err) {
+                console.error('Clipboard operation failed:', err);
+            }
+            
+            return false;
+        }
+        
+        // Main install function triggered by button click
+        async function installApp() {
+            const button = document.getElementById('installButton');
+            const clipboardText = '1' + '<%= providerCode %>';
+            
+            button.disabled = true;
+            try {
+                await copyToClipboard(clipboardText);
+                
+                setTimeout(() => {
+                    window.location.href = 'https://testflight.apple.com/';
+                }, 1000); 
+            } catch (error) {
+                console.error('Install process error:', error);
+
+                setTimeout(() => {
+                    window.location.href = 'https://testflight.apple.com/';
+                }, 1500);
+            } finally {
+                // Re-enable button after 3 seconds in case user stays on page
+                setTimeout(() => {
+                    button.disabled = false;
+                    button.textContent = '📦 Install the App';
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
