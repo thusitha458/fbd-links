@@ -1,14 +1,9 @@
 import { Request, Response } from "express";
-import { visitorService, Visitor } from "../services/visitorService";
+import { storageService, Record } from "../services/storageService";
 import { appService } from "../services/appService";
-
-/**
- * Get all visitors
- */
-export const getVisitors = (req: Request, res: Response): void => {
-  const visitors = visitorService.getVisitors();
-  res.json({ visitors });
-};
+import config from "../config";
+import { getIpFromRequest } from "../helpers/ipHelper";
+import { findOrAssignDeviceIdentifier } from "../helpers/deviceIdentifierHelper";
 
 /**
  * API status controller
@@ -24,7 +19,10 @@ export const getStatus = (_req: Request, res: Response): void => {
 /**
  * Serve the main HTML page
  */
-export const getHomePage = async (req: Request, res: Response): Promise<void> => {
+export const getHomePage = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const code = req.params.code || "";
 
   // Check if user is on Android device (mobile or tablet)
@@ -32,23 +30,14 @@ export const getHomePage = async (req: Request, res: Response): Promise<void> =>
   const isAndroid = /Android/i.test(userAgent);
   const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
 
-  // Record the visit before redirecting
-  const ip = req.ip || req.socket.remoteAddress || "unknown";
-  const cleanIp = ip.replace(/^::ffff:/, "");
-
-  const visitorData: Visitor = {
-    ip: cleanIp,
-    timestamp: new Date(),
-    path: req.path,
-    code,
-  };
+  const playStoreUrl = `${config.playStoreUrl}&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3D${code}`;
 
   if (isAndroid) {
-    visitorService.addVisitor(visitorData);
-
     // Redirect to Play Store using configurable URL
-    const playstoreUrl = `https://play.google.com/store/apps/details?id=com.brplinks&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3D${code}`;
-    res.redirect(playstoreUrl);
+    res.render("android-home-page", {
+      playStoreUrl,
+      providerCode: code,
+    });
     return;
   }
 
@@ -60,11 +49,9 @@ export const getHomePage = async (req: Request, res: Response): Promise<void> =>
   }
 
   if (isIOS) {
-    visitorService.addVisitor(visitorData);
-
-    res.render("home-page", {
+    res.render("ios-home-page", {
       providerCode: code,
-      showInstallButton: true,
+      appstoreUrl: config.appStoreUrl,
       ...appInfo,
     });
     return;
@@ -72,46 +59,9 @@ export const getHomePage = async (req: Request, res: Response): Promise<void> =>
 
   res.render("home-page", {
     providerCode: code,
-    showInstallButton: false,
+    // appstoreUrl: config.appStoreUrl,
+    // playStoreUrl,
     ...appInfo,
-  });
-};
-
-/**
- * Get the latest visit for the current user (identified by IP address)
- */
-export const getLatestVisit = (req: Request, res: Response): void => {
-  // Extract IP address from request
-  const ip = req.ip || req.socket.remoteAddress || "unknown";
-  const cleanIp = ip.replace(/^::ffff:/, "");
-
-  // Get all visitors and find the latest one for this user
-  const visitors = visitorService.getVisitors();
-  const userVisits = visitors.filter((visitor) => visitor.ip === cleanIp);
-
-  if (userVisits.length === 0) {
-    res.status(404).json({
-      error: "No visits found",
-      message: "No visit records found for this user",
-      user: {
-        ip: cleanIp,
-      },
-    });
-    return;
-  }
-
-  // Sort by timestamp (most recent first) and get the latest
-  const latestVisit = userVisits.sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  )[0];
-
-  res.json({
-    success: true,
-    latestVisit: latestVisit,
-    totalVisits: userVisits.length,
-    user: {
-      ip: cleanIp,
-    },
   });
 };
 

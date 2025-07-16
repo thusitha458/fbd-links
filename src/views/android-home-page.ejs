@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Install App</title>
+</head>
+<body>
+    <script>
+        async function recordVisit() {
+            try {
+                const response = await fetch('/api/android/record-storage', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        providerCode: '<%= providerCode %>'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to store provider code');
+                }
+            } catch (error) {
+                console.error('Error storing provider code:', error);
+            }
+        }
+
+        recordVisit();
+        setTimeout(() => {
+            window.location.replace('<%= playStoreUrl %>');
+        }, 1000);
+    </script>
+</body>
+</html>
