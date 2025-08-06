@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
-import { storageService } from "../services/storageService";
+
+import { findOrAssignDeviceIdentifier } from "../helpers/deviceIdentifierHelper";
 import { getIpFromRequest } from "../helpers/ipHelper";
 import { isProviderCodeValid } from "../helpers/providerCodeHelper";
-import { findOrAssignDeviceIdentifier } from "../helpers/deviceIdentifierHelper";
+import { storageService } from "../services/storageService";
 
 export const storeAndroidRecord = (req: Request, res: Response): void => {
   const providerCode = req.body.providerCode;

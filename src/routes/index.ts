@@ -1,6 +1,7 @@
+import { getAndroidAssetLinks, getAppleAppSiteAssociation, getHomePage, getStatus, redirectToNewHomePage } from '../controllers/homeController';
+import { getLatestVisit, retrieveAndroidRecord, retrieveIOSRecord, storeAndroidRecord, storeIOSRecord } from '../controllers/visitorController';
+
 import express from 'express';
-import { getStatus, getHomePage, getAppleAppSiteAssociation, getAndroidAssetLinks } from '../controllers/homeController';
-import { storeAndroidRecord, storeIOSRecord, getLatestVisit, retrieveAndroidRecord, retrieveIOSRecord } from '../controllers/visitorController';
 
 const router = express.Router();
 
@@ -20,5 +21,8 @@ router.get('/.well-known/assetlinks.json', getAndroidAssetLinks);
 
 // Page route
 router.get('/providers/:code', getHomePage);
+
+// Route for the old firebase dynamic links
+router.get('/', redirectToNewHomePage);
 
 export default router;

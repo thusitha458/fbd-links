@@ -1,5 +1,6 @@
-import { randomBytes } from "crypto";
 import { Request, Response } from "express";
+
+import { randomBytes } from "crypto";
 
 const DEVICE_IDENTIFIER_LENGTH = 10; // make this even
 const DEVICE_IDENTIFIER_COOKIE_NAME = "brp-device-identifier";

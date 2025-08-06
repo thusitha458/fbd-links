@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
-import { storageService, Record } from "../services/storageService";
+
 import { appService } from "../services/appService";
 import config from "../config";
-import { getIpFromRequest } from "../helpers/ipHelper";
-import { findOrAssignDeviceIdentifier } from "../helpers/deviceIdentifierHelper";
 
 /**
  * API status controller
@@ -30,7 +28,7 @@ export const getHomePage = async (
   const isAndroid = /Android/i.test(userAgent);
   const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
 
-  const playStoreUrl = `${config.playStoreUrl}&referrer=utm_source%3Dtest%26utm_medium%3Dchat%26utm_campaign%3D${code}`;
+  const playStoreUrl = `${config.playStoreUrl}&referrer=utm_source%3Ddeeplink%26utm_medium%3Dlink%26utm_campaign%3D${code}`;
 
   if (isAndroid) {
     // Redirect to Play Store using configurable URL
@@ -59,11 +57,28 @@ export const getHomePage = async (
 
   res.render("home-page", {
     providerCode: code,
-    // appstoreUrl: config.appStoreUrl,
-    // playStoreUrl,
     ...appInfo,
   });
 };
+
+export const redirectToNewHomePage = (req: Request, res: Response): void => {
+  const link = req.query.link as string;
+
+  if (!link) {
+    res.status(400).send("Invalid link");
+    return;
+  }
+
+  const url = new URL(link);
+  const providerCode = url.searchParams.get("providerCode") || url.searchParams.get("facility");
+
+  if (!providerCode) {
+    res.status(400).send("Invalid link");
+    return;
+  }
+
+  res.redirect(`/providers/${providerCode}`)
+}
 
 /**
  * Serve Apple App Site Association file for Universal Links
