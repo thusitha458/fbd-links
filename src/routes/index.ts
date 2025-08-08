@@ -1,12 +1,11 @@
 import { getAndroidAssetLinks, getAppleAppSiteAssociation, getHomePage, getStatus, redirectToNewHomePage } from '../controllers/homeController';
-import { getLatestVisit, retrieveAndroidRecord, retrieveIOSRecord, storeAndroidRecord, storeIOSRecord } from '../controllers/visitorController';
+import { retrieveAndroidRecord, retrieveIOSRecord, storeAndroidRecord, storeIOSRecord } from '../controllers/storageController';
 
 import express from 'express';
 
 const router = express.Router();
 
 // API routes
-router.get('/api/visits/latest', getLatestVisit);
 router.get('/api/status', getStatus);
 router.post('/api/android/record-storage', storeAndroidRecord);
 router.post('/api/ios/record-storage', storeIOSRecord);

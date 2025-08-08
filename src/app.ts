@@ -1,9 +1,11 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { NextFunction, Request, Response } from "express";
+
+import config from "./config/appConfig";
+import cookieParser from "cookie-parser";
+import errorHandler from "./middlewares/errorHandler";
 import path from "path";
 import routes from "./routes";
-import config from "./config";
-import errorHandler from "./middlewares/errorHandler";
-import cookieParser from "cookie-parser";
+import { sequelize } from "./config/database";
 
 const app = express();
 const port = config.port;
@@ -35,5 +37,10 @@ app.use((req: Request, res: Response) => {
 app.use(errorHandler);
 
 app.listen(port, () => {
-  console.log(`Express server is listening on port ${port}`);
+  console.log(`Server is listening on port ${port}`);
 });
+
+(async () => {
+  await sequelize.authenticate();
+  await sequelize.sync();
+})();

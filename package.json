@@ -22,6 +22,7 @@
     "@types/cookie-parser": "^1.4.9",
     "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.2",
+    "@types/sequelize": "^4.28.20",
     "@typescript-eslint/eslint-plugin": "^8.33.0",
     "@typescript-eslint/parser": "^8.33.0",
     "eslint": "^9.28.0",
@@ -34,6 +35,8 @@
     "dotenv": "^16.5.0",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
-    "node-fetch": "^3.3.2"
+    "mysql2": "^3.14.3",
+    "node-fetch": "^3.3.2",
+    "sequelize": "^6.37.7"
   }
 }

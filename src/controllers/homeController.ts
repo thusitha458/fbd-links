@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 import { appService } from "../services/appService";
-import config from "../config";
+import config from "../config/appConfig";
 
 /**
  * API status controller

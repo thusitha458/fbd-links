@@ -1,68 +1,98 @@
+import AndroidRecord from "../models/AndroidRecord";
+import IOSRecord from "../models/IOSRecord";
+import { Op } from "sequelize";
+
 const ONE_HOUR_IN_MS = 60 * 60 * 1000;
 
-export interface Record {
+export interface RecordDto {
   ip: string;
-  timestamp: Date;
   providerCode: string;
   deviceIdentifier: string;
 }
 
 class StorageService {
-  private androidRecords: Record[] = [];
-  private iosRecords: Record[] = [];
-
   constructor() {
     setInterval(() => this.cleanUpOldRecords(), ONE_HOUR_IN_MS);
   }
 
-  public storeAndroidRecord(record: Record) {
-    this.androidRecords = this.androidRecords.filter(it => it.deviceIdentifier !== record.deviceIdentifier);
-    this.androidRecords.push(record);
+  public async storeAndroidRecord(record: RecordDto) {
+    await AndroidRecord.destroy({
+      where: { deviceIdentifier: record.deviceIdentifier },
+    });
+
+    await AndroidRecord.create({
+      ip: record.ip,
+      providerCode: record.providerCode,
+      deviceIdentifier: record.deviceIdentifier,
+    });
   }
 
-  public retrieveAndroidRecord(ip: string) {
-    return this.retrieveRecord(ip, this.androidRecords);
+  public async retrieveAndroidRecord(ip: string) {
+    const records = await AndroidRecord.findAll({
+      where: { ip, createdAt: { [Op.gte]: this.getOneDayAgo() } },
+      order: [["createdAt", "DESC"]],
+      limit: 1,
+    });
+
+    return records.length > 0 ? recordToDto(records[0]) : null;
   }
 
-  public storeIOSRecord(record: Record) {
-    this.iosRecords = this.iosRecords.filter(it => it.deviceIdentifier !== record.deviceIdentifier);
-    this.iosRecords.push(record);
+  public async storeIOSRecord(record: RecordDto) {
+    await IOSRecord.destroy({
+      where: { deviceIdentifier: record.deviceIdentifier },
+    });
+
+    await IOSRecord.create({
+      ip: record.ip,
+      providerCode: record.providerCode,
+      deviceIdentifier: record.deviceIdentifier,
+    });
   }
 
-  public retrieveIOSRecord(ip: string) {
-    return this.retrieveRecord(ip, this.iosRecords);
-  }
+  public async retrieveIOSRecord(ip: string) {
+    const records = await IOSRecord.findAll({
+      where: { ip, createdAt: { [Op.gte]: this.getOneDayAgo() } },
+      order: [["createdAt", "DESC"]],
+      limit: 1,
+    });
 
-  private retrieveRecord(ip: string, records: Record[]) {
-    const indexesOfSameIp = records.map((it, index) => it.ip === ip ? index : -1).filter(index => index !== -1);
-
-    if (indexesOfSameIp.length > 0) {
-      const indexOfLatestRecord = indexesOfSameIp.reduce((latest, current) => {
-        return records[current].timestamp > records[latest].timestamp ? current : latest;
-      }, indexesOfSameIp[0]);
-
-      const record = records[indexOfLatestRecord];
-      records.splice(indexOfLatestRecord, 1);
-      return record;
-    }
-
-    return null;
+    return records.length > 0 ? recordToDto(records[0]) : null;
   }
 
   private cleanUpOldRecords() {
-    const now = new Date();
-    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    
-    this.androidRecords = this.androidRecords.filter(it => it.timestamp >= oneDayAgo);
-    this.iosRecords = this.iosRecords.filter(it => it.timestamp >= oneDayAgo);
+    const oneDayAgo = this.getOneDayAgo();
+
+    AndroidRecord.destroy({
+      where: {
+        createdAt: {
+          [Op.lt]: oneDayAgo,
+        },
+      },
+    }).catch(() => console.warn("Error cleaning up old Android records"));
+
+    IOSRecord.destroy({
+      where: {
+        createdAt: {
+          [Op.lt]: oneDayAgo,
+        },
+      },
+    }).catch(() => console.warn("Error cleaning up old iOS records"));
   }
 
-  public getVisitors() {
-    // Only to support older versions of the app, will remove in future
-    return [...this.androidRecords, ...this.iosRecords];
+  private getOneDayAgo() {
+    const now = new Date();
+    return new Date(now.getTime() - 24 * 60 * 60 * 1000);
   }
 }
 
 export const storageService = new StorageService();
 
 export default StorageService;
+
+const recordToDto = (record: AndroidRecord | IOSRecord): RecordDto => {
+  return {
+    ip: record.getDataValue("ip"),
+    providerCode: record.getDataValue("providerCode"),
+    deviceIdentifier: record.getDataValue("deviceIdentifier"),
+  };
+};
