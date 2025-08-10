@@ -26,20 +26,22 @@ AndroidRecord.init(
       type: DataTypes.STRING(20),
       allowNull: false,
     },
+    createdAt: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+    },
   },
   {
     sequelize,
     tableName: "android_records",
-    timestamps: true,
-    createdAt: "createdAt",
-    updatedAt: false,
+    timestamps: false,
     indexes: [
       {
         fields: ["deviceIdentifier"],
       },
       {
         fields: ["ip", "createdAt"],
-      }
+      },
     ],
   }
 );

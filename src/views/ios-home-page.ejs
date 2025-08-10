@@ -12,7 +12,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            background: linear-gradient(180deg, #EDEADE 0%, <%= primaryColor %> 150%);
+            background: linear-gradient(180deg, #EDEADE 0%, <%- primaryColor %> 150%);
             background-color: #EDEADE;
             text-align: center;
             padding: 20px;
@@ -39,7 +39,7 @@
             line-height: 1.5;
         }
         .install-button {
-            background: <%= primaryColor %>;
+            background: <%- primaryColor %>;
             border: none;
             color: white;
             padding: 18px 30px;
@@ -89,7 +89,7 @@
     <div class="container">
         <% if (logo.contentUrl) { %>
             <div class="logo-container">
-                <image src="<%= logo.contentUrl %>" alt="<%= appName %> Logo" class="logo">
+                <image src="<%- logo.contentUrl %>" alt="<%= appName %> Logo" class="logo">
             </div>
         <% } %>
         <div class="title">Get the <%= appName %> app!</div>
@@ -150,7 +150,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        providerCode: '<%= providerCode %>'
+                        providerCode: '<%- providerCode %>'
                     })
                 });
                 
@@ -165,7 +165,7 @@
         // Main install function triggered by button click
         async function installApp() {
             const button = document.getElementById('installButton');
-            const clipboardText = '1' + '<%= providerCode %>';
+            const clipboardText = '1' + '<%- providerCode %>';
 
             recordVisit();
             
@@ -174,13 +174,13 @@
                 await copyToClipboard(clipboardText);
                 
                 setTimeout(() => {
-                    window.location.href = '<%= appstoreUrl %>';
+                    window.location.href = '<%- appstoreUrl %>';
                 }, 1000); 
             } catch (error) {
                 console.error('Install process error:', error);
 
                 setTimeout(() => {
-                    window.location.href = '<%= appstoreUrl %>';
+                    window.location.href = '<%- appstoreUrl %>';
                 }, 1500);
             } finally {
                 // Re-enable button after 3 seconds in case user stays on page

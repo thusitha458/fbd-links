@@ -24,6 +24,7 @@ class StorageService {
       ip: record.ip,
       providerCode: record.providerCode,
       deviceIdentifier: record.deviceIdentifier,
+      createdAt: new Date().getTime(),
     });
   }
 
@@ -46,6 +47,7 @@ class StorageService {
       ip: record.ip,
       providerCode: record.providerCode,
       deviceIdentifier: record.deviceIdentifier,
+      createdAt: new Date().getTime(),
     });
   }
 
@@ -81,7 +83,7 @@ class StorageService {
 
   private getOneDayAgo() {
     const now = new Date();
-    return new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    return now.getTime() - 24 * 60 * 60 * 1000;
   }
 }
 

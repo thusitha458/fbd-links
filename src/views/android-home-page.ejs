@@ -15,7 +15,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        providerCode: '<%= providerCode %>'
+                        providerCode: '<%- providerCode %>'
                     })
                 });
                 
@@ -29,7 +29,7 @@
 
         recordVisit();
         setTimeout(() => {
-            window.location.replace('<%= playStoreUrl %>');
+            console.log('<%- playStoreUrl %>');
         }, 1000);
     </script>
 </body>

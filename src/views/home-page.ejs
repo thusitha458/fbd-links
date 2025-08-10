@@ -12,7 +12,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            background: linear-gradient(180deg, #EDEADE 0%, <%= primaryColor %> 150%);
+            background: linear-gradient(180deg, #EDEADE 0%, <%- primaryColor %> 150%);
             background-color: #EDEADE;
             text-align: center;
             padding: 20px;
@@ -39,7 +39,7 @@
             line-height: 1.5;
         }
         .install-button {
-            background: <%= primaryColor %>;
+            background: <%- primaryColor %>;
             border: none;
             color: white;
             padding: 18px 30px;
@@ -89,7 +89,7 @@
     <div class="container">
         <% if (logo.contentUrl) { %>
             <div class="logo-container">
-                <image src="<%= logo.contentUrl %>" alt="<%= appName %> Logo" class="logo">
+                <image src="<%- logo.contentUrl %>" alt="<%= appName %> Logo" class="logo">
             </div>
         <% } %>
         <div class="title">Get the <%= appName %> app!</div>
