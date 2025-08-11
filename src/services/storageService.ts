@@ -32,10 +32,22 @@ class StorageService {
     const records = await AndroidRecord.findAll({
       where: { ip, createdAt: { [Op.gte]: this.getOneDayAgo() } },
       order: [["createdAt", "DESC"]],
-      limit: 1,
     });
 
-    return records.length > 0 ? recordToDto(records[0]) : null;
+    if (records.length === 1) {
+      return recordToDto(records[0]);
+    }
+
+    if (records.length > 1) {
+      const latestRecord = records[0];
+      const latestRecordTime = latestRecord.getDataValue("createdAt") as number;
+      const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000;
+      if (latestRecordTime >= thirtyMinutesAgo) {
+        return recordToDto(latestRecord);
+      }
+    }
+
+    return null;
   }
 
   public async storeIOSRecord(record: RecordDto) {
@@ -55,10 +67,22 @@ class StorageService {
     const records = await IOSRecord.findAll({
       where: { ip, createdAt: { [Op.gte]: this.getOneDayAgo() } },
       order: [["createdAt", "DESC"]],
-      limit: 1,
     });
 
-    return records.length > 0 ? recordToDto(records[0]) : null;
+    if (records.length === 1) {
+      return recordToDto(records[0]);
+    }
+
+    if (records.length > 1) {
+      const latestRecord = records[0];
+      const latestRecordTime = latestRecord.getDataValue("createdAt") as number;
+      const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000;
+      if (latestRecordTime >= thirtyMinutesAgo) {
+        return recordToDto(latestRecord);
+      }
+    }
+
+    return null;
   }
 
   private cleanUpOldRecords() {

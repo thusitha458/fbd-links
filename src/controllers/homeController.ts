@@ -70,15 +70,16 @@ export const redirectToNewHomePage = (req: Request, res: Response): void => {
   }
 
   const url = new URL(link);
-  const providerCode = url.searchParams.get("providerCode") || url.searchParams.get("facility");
+  const providerCode =
+    url.searchParams?.get("providerCode") || url.searchParams?.get("facility");
 
   if (!providerCode) {
     res.status(400).send("Invalid link");
     return;
   }
 
-  res.redirect(`/providers/${providerCode}`)
-}
+  res.redirect(`/providers/${providerCode}`);
+};
 
 /**
  * Serve Apple App Site Association file for Universal Links
@@ -96,6 +97,13 @@ export const getAppleAppSiteAssociation = (
             {
               "/": "/providers/*",
               comment: "Matches all provider paths for Universal Links",
+            },
+            {
+              "/": "/*",
+              "?": {
+                link: "?*",
+              },
+              comment: "Matches any URL with a 'link' query parameter",
             },
           ],
         },
