@@ -3,6 +3,7 @@ import express, { NextFunction, Request, Response } from "express";
 import config from "./config/appConfig";
 import cookieParser from "cookie-parser";
 import errorHandler from "./middlewares/errorHandler";
+import { getIpFromRequest } from "./helpers/ipHelper";
 import path from "path";
 import routes from "./routes";
 import { sequelize } from "./config/database";
@@ -18,7 +19,7 @@ app.set("views", path.join(__dirname, "../src/views"));
 app.set("trust proxy", 1);
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log(`[${new Date().toISOString()}][${getIpFromRequest(req)}] ${req.method} ${req.url}`);
   next();
 });
 

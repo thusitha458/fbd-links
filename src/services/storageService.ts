@@ -41,7 +41,7 @@ class StorageService {
     if (records.length > 1) {
       const latestRecord = records[0];
       const latestRecordTime = latestRecord.getDataValue("createdAt") as number;
-      const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000;
+      const thirtyMinutesAgo = new Date().getTime() - 30 * 60 * 1000;
       if (latestRecordTime >= thirtyMinutesAgo) {
         return recordToDto(latestRecord);
       }
@@ -76,7 +76,7 @@ class StorageService {
     if (records.length > 1) {
       const latestRecord = records[0];
       const latestRecordTime = latestRecord.getDataValue("createdAt") as number;
-      const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000;
+      const thirtyMinutesAgo = new Date().getTime() - 30 * 60 * 1000;
       if (latestRecordTime >= thirtyMinutesAgo) {
         return recordToDto(latestRecord);
       }
