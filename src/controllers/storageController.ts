@@ -69,7 +69,7 @@ export const retrieveAndroidRecord = async (req: Request, res: Response) => {
     }
 
     res.json({
-      code: record.providerCode,
+      providerCode: record.providerCode,
     });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
