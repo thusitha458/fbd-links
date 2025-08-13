@@ -92,11 +92,11 @@ export const getAppleAppSiteAssociation = (
     applinks: {
       details: [
         {
-          appIDs: ["XAR3N4K5N8.se.brpsystems.brplinks"],
+          appIDs: ["46TM43B7XL.se.brpsystems.mobility"],
           components: [
             {
               "/": "/providers/*",
-              comment: "Matches all provider paths for Universal Links",
+              comment: "Matches all provider paths",
             },
             {
               "/": "/*",
@@ -110,7 +110,7 @@ export const getAppleAppSiteAssociation = (
       ],
     },
     appclips: {
-      apps: ["XAR3N4K5N8.se.brpsystems.brplinks.Clip"],
+      apps: ["46TM43B7XL.se.brpsystems.mobility.Clip"],
     },
   };
 
@@ -128,9 +128,9 @@ export const getAndroidAssetLinks = (req: Request, res: Response): void => {
       relation: ["delegate_permission/common.handle_all_urls"],
       target: {
         namespace: "android_app",
-        package_name: "com.brplinks",
+        package_name: "se.brpsystems.mobility",
         sha256_cert_fingerprints: [
-          "24:A0:21:B4:AB:D1:D8:B7:AF:0E:25:02:A1:A4:BA:B2:3B:BB:31:6A:C6:75:81:42:92:CB:87:89:5F:8A:2E:3A",
+          "84:7C:E5:8F:CF:98:12:EF:08:05:C3:B0:86:9E:F3:29:C9:5E:7E:BA:0E:60:67:3F:93:E7:9B:F2:E0:1A:9D:9A",
         ],
       },
     },
