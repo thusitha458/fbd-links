@@ -134,16 +134,6 @@ export const getAndroidAssetLinks = (req: Request, res: Response): void => {
         ],
       },
     },
-    {
-      relation: ["delegate_permission/common.handle_all_urls"],
-      target: {
-        namespace: "android_app",
-        package_name: "se.brpsystems.mobility",
-        sha256_cert_fingerprints: [
-          "72:89:D1:4D:EB:94:E6:2A:41:B6:0C:DA:4B:46:74:4B:EE:C8:3B:82:EB:E6:20:42:0A:39:9A:25:AA:AB:85:C3",
-        ],
-      },
-    },
   ];
 
   // Set the correct content type for Android Asset Links
